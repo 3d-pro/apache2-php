@@ -1,0 +1,8 @@
+sudo: required
+services:
+   - docker
+
+script:
+   - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+   - docker build -t 3dpro/apache2-php:7.2 -f Dockerfile-7.2 .
+   - docker push 3dpro/apache2-php:7.2
