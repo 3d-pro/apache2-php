@@ -27,7 +27,6 @@ RUN apt-get update && apt-get install -y git vim \
     && pecl install memcached-3.0.4 \
     && pecl install mcrypt-1.0.1 \
     && docker-php-ext-enable redis xdebug geoip memcached mcrypt \
-    && a2enmod rewrite \
     && mkdir -p /tmp/lib/php/session; \
     mkdir -p /tmp/lib/php/wsdlcache; \
     mkdir -p /tmp/lib/php/opcache; \
@@ -35,7 +34,8 @@ RUN apt-get update && apt-get install -y git vim \
     chmod 777 -R /tmp/lib/php && \
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer && \
     composer global require 'hirak/prestissimo' && \
-    echo 'export PATH="$PATH:$HOME/.composer/vendor/bin"' >> ~/.bashrc
+    echo 'export PATH="$PATH:$HOME/.composer/vendor/bin"' >> ~/.bashrc && \
+    a2enmod rewrite
 
 COPY build-files/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
 COPY build-files/apache.conf /etc/apache2/sites-available/000-default.conf
