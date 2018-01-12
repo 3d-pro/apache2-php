@@ -1,0 +1,41 @@
+FROM php:7.2-apache
+MAINTAINER Opsta Thailand
+
+RUN apt-get update && apt-get install -y git \
+        libfreetype6-dev \
+        libjpeg62-turbo-dev \
+        libmcrypt-dev \
+        libpng-dev \
+        libxml2-dev \
+        libldb-dev \
+        libldap2-dev \
+        libbz2-dev \
+        libgeoip-dev \
+        libmemcached-dev \
+        freetds-dev \
+    && ln -s /usr/lib/x86_64-linux-gnu/libldap.so /usr/lib/libldap.so \
+    && ln -s /usr/lib/x86_64-linux-gnu/liblber.so /usr/lib/liblber.so \
+    && ln -s /usr/lib/x86_64-linux-gnu/libsybdb.a /usr/lib/libsybdb.a \
+    && docker-php-ext-install -j$(nproc) bz2 bcmath dom json mbstring mcrypt opcache mysqli pdo pdo_dblib pdo_mysql \
+    && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
+    && docker-php-ext-install -j$(nproc) gd \
+    && docker-php-ext-configure ldap --with-ldap=/usr \
+    && docker-php-ext-install -j$(nproc) ldap \
+    && docker-php-ext-install -j$(nproc) zip \
+    && pecl install redis-3.1.4 \
+    && pecl install xdebug-2.5.0 \
+    && pecl install geoip-1.1.1 \
+    && pecl install memcached-3.0.3 \
+    && docker-php-ext-enable redis xdebug geoip memcached \
+    && a2enmod rewrite \
+    && mkdir -p /tmp/lib/php/session; \
+    mkdir -p /tmp/lib/php/wsdlcache; \
+    mkdir -p /tmp/lib/php/opcache; \
+    mkdir /root/.composer; \
+    chmod 777 -R /tmp/lib/php && \
+    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer && \
+    composer global require 'hirak/prestissimo' && \
+    echo 'export PATH="$PATH:$HOME/.composer/vendor/bin"' >> ~/.bashrc
+
+COPY build-files/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
+COPY build-files/apache.conf /etc/apache2/sites-available/000-default.conf
